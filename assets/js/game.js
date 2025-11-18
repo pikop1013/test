@@ -16,6 +16,7 @@ const state = {
   totalEarned: 0,
   lastMoneyForDps: 0,
   currentDps: 0,
+  burstGauge: 0,
 };
 
 // ========= 宝石定義 =========
@@ -90,6 +91,9 @@ const autoBtn = document.getElementById("auto-btn");
 const feverLabelEl = document.getElementById("fever-label");
 const feverBarEl = document.getElementById("fever-bar");
 const feverBtn = document.getElementById("fever-btn");
+const burstLabelEl = document.getElementById("burst-label");
+const burstBarEl = document.getElementById("burst-bar");
+const burstBtn = document.getElementById("burst-btn");
 
 // ========= 数値フォーマット =========
 function formatBigNumber(value) {
@@ -178,6 +182,48 @@ function addFeverGauge(amount) {
   state.feverGauge = Math.min(100, state.feverGauge + amount);
   updateFeverUI();
 }
+
+// ========= ハイパーゲージ（爽快インフレボーナス） =========
+function updateBurstUI() {
+  const gauge = Math.round(state.burstGauge);
+  burstLabelEl.textContent = `${gauge}%`;
+  burstBarEl.style.width = `${Math.min(100, gauge)}%`;
+  burstBtn.disabled = gauge < 100;
+  burstBtn.classList.toggle("ready", gauge >= 100);
+  burstBtn.textContent = gauge >= 100 ? "超インフレ弾 READY" : "超インフレ弾";
+}
+
+function addBurstGauge(amount) {
+  state.burstGauge = Math.min(120, state.burstGauge + amount);
+  updateBurstUI();
+}
+
+function triggerBurst() {
+  if (state.burstGauge < 100) return;
+  state.burstGauge = 0;
+  updateBurstUI();
+
+  statusMainEl.textContent =
+    "超インフレ弾！一瞬で宝石の雨が降り注ぎ、画面と財布を派手にブチ上げる！";
+
+  const bursts = 12;
+  const baseValue = 150 + state.level * 35 + state.autoMinerLevel * 24;
+
+  for (let i = 0; i < bursts; i++) {
+    const pos = {
+      x: Math.random() * fieldEl.clientWidth,
+      y: Math.random() * fieldEl.clientHeight,
+    };
+    addMoney(baseValue, "ハイパー宝石", { pos });
+  }
+
+  addFeverGauge(20);
+  addCombo();
+  updateStats();
+  restartSpawnTimer();
+}
+
+burstBtn.addEventListener("click", triggerBurst);
 
 function endFever() {
   state.isFever = false;
@@ -328,9 +374,16 @@ function addXp(amount) {
   restartSpawnTimer();
 }
 
+function autoBaseIncome() {
+  if (state.autoMinerLevel <= 0) return 0;
+  const exponential = Math.pow(1.12, state.autoMinerLevel);
+  const levelScale = 1 + (state.level - 1) * 0.14;
+  return Math.floor(8 * exponential * levelScale);
+}
+
 function updateStats() {
   tapCountEl.textContent = state.totalTapCount;
-  const baseAuto = state.autoMinerLevel * 5;
+  const baseAuto = autoBaseIncome();
   const displayAuto = Math.floor(baseAuto * totalValueMultiplier());
   autoIncomeEl.textContent = formatBigNumber(displayAuto);
   dpsEl.textContent = formatBigNumber(state.currentDps);
@@ -450,6 +503,7 @@ function handleNormalGemTap(gemEl, gemType, pos) {
 
   addCombo();
   addFeverGauge(5); // 1タップで5%（20ヒットでFEVER）
+  addBurstGauge(6);
 
   state.totalTapCount += 1;
   updateStats();
@@ -475,6 +529,7 @@ function handleBombTap(bombEl, pos) {
 
   addCombo();
   addFeverGauge(10); // ボムで一気にゲージUP
+  addBurstGauge(12);
   state.totalTapCount += 1;
 
   const fieldRect = fieldEl.getBoundingClientRect();
@@ -566,12 +621,13 @@ function handleBombTap(bombEl, pos) {
 // ========= オート採掘機 =========
 function autoMinerTick() {
   if (state.autoMinerLevel <= 0) return;
-  let gain = state.autoMinerLevel * 5;
+  let gain = autoBaseIncome();
   gain = Math.floor(gain * totalValueMultiplier());
   if (gain <= 0) return;
   state.money += gain;
   state.totalEarned += gain;
   moneyEl.textContent = formatBigNumber(state.money);
+  addBurstGauge(2 + state.autoMinerLevel * 0.6);
   updateUnlockStatusText();
   updateShopButtons();
 }
@@ -640,10 +696,11 @@ function init() {
   updateUnlockStatusText();
   updateShopButtons();
   updateFeverUI();
+  updateBurstUI();
   updateStats();
 
   statusMainEl.textContent =
-    "時間が経つと宝石が出現します。タップ連打とボム・FEVERで画面をぶっ壊そう！";
+    "時間が経つと宝石が出現します。タップ連打とボム・FEVER・超インフレ弾で画面をぶっ壊そう！";
 
   restartSpawnTimer();
   setInterval(autoMinerTick, 1000);

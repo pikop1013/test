@@ -5,34 +5,43 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue",
-    "Segoe UI", sans-serif;
-  background: #050608;
-  color: #f5f5f5;
+  font-family: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont,
+    "Helvetica Neue", "Segoe UI", sans-serif;
+  background: radial-gradient(circle at 20% 20%, #1b1f34, #0b0d16 60%),
+    radial-gradient(circle at 80% 0%, #2a183e, transparent 45%),
+    linear-gradient(145deg, #0d0f1c, #0b0d16 60%);
+  color: #f6f7fb;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
+  padding: 12px;
 }
 
 #game {
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   height: 100vh;
-  max-height: 900px;
+  max-height: 920px;
   display: flex;
   flex-direction: column;
-  background: #141414;
+  background: linear-gradient(180deg, rgba(30, 33, 55, 0.9), #0d0f1c);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
 }
 
 header {
-  padding: 10px 14px;
-  border-bottom: 1px solid #333;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   font-size: 14px;
-  gap: 8px;
+  gap: 10px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent);
 }
 
 header .left {
@@ -55,7 +64,10 @@ header .left {
 
 .money-value {
   font-weight: bold;
-  font-size: 20px;
+  font-size: 22px;
+  letter-spacing: 0.3px;
+  color: #fefefe;
+  text-shadow: 0 0 8px rgba(66, 165, 245, 0.45);
 }
 
 .level-row {
@@ -66,7 +78,7 @@ header .left {
 .xp-bar-container {
   width: 150px;
   height: 6px;
-  background: #333;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   overflow: hidden;
   margin-top: 3px;
@@ -74,7 +86,7 @@ header .left {
 
 .xp-bar {
   height: 100%;
-  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  background: linear-gradient(90deg, #4caf50, #9ccc65);
   width: 0%;
 }
 
@@ -86,7 +98,7 @@ header .left {
 .right-panel {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   align-items: flex-end;
   font-size: 11px;
 }
@@ -116,6 +128,14 @@ header .left {
   gap: 2px;
 }
 
+.burst-indicator {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
 .fever-top {
   display: flex;
   align-items: center;
@@ -129,7 +149,7 @@ header .left {
 .fever-bar-container {
   width: 120px;
   height: 6px;
-  background: #333;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -140,47 +160,99 @@ header .left {
   width: 0%;
 }
 
+.burst-bar-container {
+  width: 120px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.burst-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #5ad7ff, #00e5ff);
+  width: 0%;
+}
+
 #fever-btn {
   margin-top: 2px;
-  padding: 2px 6px;
+  padding: 4px 8px;
   font-size: 11px;
   border-radius: 999px;
   border: none;
   cursor: pointer;
   touch-action: manipulation;
-  background: #555;
-  color: #ddd;
+  background: linear-gradient(135deg, #42476b, #2a2f4c);
+  color: #d8def7;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
 #fever-btn.ready {
   background: linear-gradient(135deg, #ff7043, #ffb300);
-  color: #212121;
-  font-weight: 600;
+  color: #1d130b;
+  font-weight: 700;
+  box-shadow: 0 8px 22px rgba(255, 179, 0, 0.3);
 }
 
 #fever-btn.active {
   background: linear-gradient(135deg, #ffca28, #ffe082);
   color: #212121;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+#burst-btn {
+  margin-top: 2px;
+  padding: 5px 10px;
+  font-size: 11px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  background: linear-gradient(135deg, #183d77, #0f62fe);
+  color: #e8f4ff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+#burst-btn.ready {
+  background: linear-gradient(135deg, #21c9ff, #00e6ff);
+  color: #002c3d;
+  font-weight: 800;
+  box-shadow: 0 10px 26px rgba(0, 230, 255, 0.35);
+}
+
+#burst-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 #field {
   position: relative;
-  flex: 1;
+  flex: 1 1 auto;
   overflow: hidden;
-  background: radial-gradient(circle at top, #283593, #0d1020);
+  background: radial-gradient(circle at 35% 20%, rgba(74, 144, 226, 0.35), transparent 45%),
+    radial-gradient(circle at 70% 0%, rgba(255, 158, 68, 0.3), transparent 40%),
+    linear-gradient(180deg, #11162c, #0c0f1f);
+  box-shadow: inset 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 #bottom {
-  border-top: 1px solid #333;
-  background: #181818;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(18, 21, 36, 0.95);
+  flex: 0 0 250px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 #status-area {
-  padding: 8px 14px;
+  padding: 10px 14px;
   font-size: 12px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   line-height: 1.4;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+  flex: 0 0 88px;
+  overflow-y: auto;
 }
 
 #status-main {
@@ -192,14 +264,18 @@ header .left {
 }
 
 #shop {
-  padding: 8px 14px 10px;
+  padding: 10px 14px 12px;
   font-size: 12px;
+  flex: 1 1 auto;
+  overflow-y: auto;
 }
 
 #shop-title {
   font-size: 13px;
-  margin-bottom: 4px;
-  opacity: 0.9;
+  margin-bottom: 6px;
+  opacity: 0.95;
+  letter-spacing: 0.2px;
+  color: #d6dcff;
 }
 
 .shop-grid {
@@ -209,17 +285,20 @@ header .left {
 
 .shop-item {
   flex: 1;
-  background: #232323;
-  border-radius: 10px;
-  padding: 6px 8px;
+  background: linear-gradient(145deg, rgba(40, 44, 70, 0.8), rgba(19, 21, 40, 0.9));
+  border-radius: 12px;
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 }
 
 .shop-item-title {
   font-size: 12px;
   font-weight: 600;
+  color: #eaf1ff;
 }
 
 .shop-item-desc {
@@ -232,11 +311,12 @@ header .left {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: #d2d7eb;
 }
 
 .shop-item button {
-  margin-top: 4px;
-  padding: 4px 6px;
+  margin-top: 6px;
+  padding: 6px 8px;
   font-size: 12px;
   border-radius: 999px;
   border: none;
@@ -244,12 +324,14 @@ header .left {
   touch-action: manipulation;
   background: linear-gradient(135deg, #42a5f5, #1e88e5);
   color: #fff;
+  box-shadow: 0 6px 16px rgba(66, 165, 245, 0.35);
 }
 
 .shop-item button:disabled {
   background: #555;
   color: #bbb;
   cursor: default;
+  box-shadow: none;
 }
 
 .gem {
@@ -265,7 +347,8 @@ header .left {
   color: #fff;
   cursor: pointer;
   touch-action: manipulation;
-  box-shadow: 0 0 14px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55),
+    0 0 20px rgba(255, 255, 255, 0.08);
   transform: translate(-50%, -50%);
   transition: transform 0.06s ease-out;
 }
@@ -276,25 +359,30 @@ header .left {
 
 .gem-normal {
   background: linear-gradient(135deg, #42a5f5, #1e88e5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .gem-rare {
   background: linear-gradient(135deg, #ab47bc, #8e24aa);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .gem-epic {
   background: linear-gradient(135deg, #ffca28, #ffb300);
   color: #4e342e;
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .gem-mythic {
   background: linear-gradient(135deg, #ff7043, #f4511e);
   color: #fff3e0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .gem-bomb {
   background: radial-gradient(circle at 30% 20%, #ffeb3b, #d32f2f);
   color: #fffde7;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .badge {
