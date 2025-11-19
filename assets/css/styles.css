@@ -260,9 +260,10 @@ header .left {
 #bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(18, 21, 36, 0.95);
-  flex: 0 0 190px;
+  flex: 0 0 230px;
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-auto-rows: minmax(0, auto);
   gap: 12px;
   padding: 12px 14px;
   overflow: hidden;
@@ -300,7 +301,8 @@ header .left {
 }
 
 #status-area,
-#shop-summary {
+#shop-summary,
+#auto-log {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
@@ -308,6 +310,12 @@ header .left {
   font-size: 12px;
   min-width: 0;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+}
+
+#auto-log {
+  grid-column: 1 / span 2;
+  max-height: 120px;
+  overflow: hidden;
 }
 
 #status-main {
@@ -421,6 +429,47 @@ header .left {
   color: #bbb;
   cursor: default;
   box-shadow: none;
+}
+
+.log-rate {
+  font-size: 11px;
+  color: #9cb7ff;
+  letter-spacing: 0.2px;
+}
+
+.log-list {
+  list-style: none;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.5;
+  max-height: 90px;
+  overflow: hidden;
+}
+
+.log-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 3px 0;
+}
+
+.log-list li.empty {
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.log-list li:last-child {
+  border-bottom: none;
+}
+
+.log-time {
+  opacity: 0.65;
+}
+
+.log-value {
+  font-weight: 600;
+  color: #fdd835;
 }
 
 .gem {
