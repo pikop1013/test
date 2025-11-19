@@ -66,41 +66,95 @@
         <main id="field"></main>
 
       <div id="bottom">
-        <div id="status-area">
+        <section id="status-area">
+          <div class="section-header">
+            <div class="section-title">ステータス</div>
+            <button id="open-status-modal" class="ghost-btn">詳細を見る</button>
+          </div>
           <div id="status-main">
             宝石をタップしてお金とXPを集めよう。コンボとFEVERで一気にインフレ！
           </div>
-          <div id="status-sub"></div>
-        </div>
+          <div id="status-sub" class="status-sub"></div>
+        </section>
 
-        <section id="shop">
-          <div id="shop-title">ショップ（アップグレード）</div>
-          <div class="shop-grid">
-            <div class="shop-item">
-              <div class="shop-item-title">出現速度アップ</div>
-              <div class="shop-item-desc">
-                宝石の出現間隔が短くなり、同時出現数も増えやすくなる。
+        <section id="shop-summary">
+          <div class="section-header">
+            <div class="section-title">ショップ</div>
+            <button id="open-shop-modal" class="ghost-btn">開く</button>
+          </div>
+          <div class="shop-quick-grid">
+            <div class="shop-quick">
+              <div class="shop-quick-label">出現速度アップ</div>
+              <div class="shop-quick-body">
+                <span class="shop-quick-level">Lv.<span id="spawn-level">0</span></span>
+                <span class="shop-quick-cost">必要: <span id="spawn-cost">200</span>G</span>
               </div>
-              <div class="shop-item-info">
-                <span>Lv.<span id="spawn-level">0</span></span>
-                <span>必要: <span id="spawn-cost">200</span>G</span>
-              </div>
-              <button id="spawn-btn">購入</button>
             </div>
-
-            <div class="shop-item">
-              <div class="shop-item-title">オート採掘機</div>
-              <div class="shop-item-desc">
-                何もしなくても毎秒自動でお金を稼いでくれる。
+            <div class="shop-quick">
+              <div class="shop-quick-label">オート採掘機</div>
+              <div class="shop-quick-body">
+                <span class="shop-quick-level">Lv.<span id="auto-level">0</span></span>
+                <span class="shop-quick-cost">必要: <span id="auto-cost">300</span>G</span>
               </div>
-              <div class="shop-item-info">
-                <span>Lv.<span id="auto-level">0</span></span>
-                <span>必要: <span id="auto-cost">300</span>G</span>
-              </div>
-              <button id="auto-btn">購入</button>
             </div>
           </div>
         </section>
+      </div>
+    </div>
+
+    <div id="modal-overlay" class="hidden" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-container" role="dialog" aria-modal="true">
+        <div class="modal-header">
+          <div id="modal-title" class="modal-title"></div>
+          <button id="modal-close" class="close-btn" aria-label="閉じる">✕</button>
+        </div>
+        <div id="modal-body" class="modal-body">
+          <div id="status-modal-content" class="modal-panel hidden">
+            <div class="modal-block">
+              <div class="modal-label">最新ログ</div>
+              <div id="status-main-full" class="modal-log"></div>
+            </div>
+            <div class="modal-block">
+              <div class="modal-label">解放状況</div>
+              <div id="status-sub-full" class="modal-log"></div>
+            </div>
+            <div class="modal-block modal-metrics">
+              <div><strong>タップ数</strong> <span id="metric-taps">0</span> 回</div>
+              <div><strong>オート収入</strong> <span id="metric-auto">0</span> G/秒</div>
+              <div><strong>DPS</strong> <span id="metric-dps">0</span> G/秒</div>
+            </div>
+          </div>
+
+          <div id="shop-modal-content" class="modal-panel hidden">
+            <div id="shop-title">ショップ（アップグレード）</div>
+            <div class="shop-grid">
+              <div class="shop-item">
+                <div class="shop-item-title">出現速度アップ</div>
+                <div class="shop-item-desc">
+                  宝石の出現間隔が短くなり、同時出現数も増えやすくなる。
+                </div>
+                <div class="shop-item-info">
+                  <span>Lv.<span id="spawn-level-modal">0</span></span>
+                  <span>必要: <span id="spawn-cost-modal">200</span>G</span>
+                </div>
+                <button id="spawn-btn">購入</button>
+              </div>
+
+              <div class="shop-item">
+                <div class="shop-item-title">オート採掘機</div>
+                <div class="shop-item-desc">
+                  何もしなくても毎秒自動でお金を稼いでくれる。
+                </div>
+                <div class="shop-item-info">
+                  <span>Lv.<span id="auto-level-modal">0</span></span>
+                  <span>必要: <span id="auto-cost-modal">300</span>G</span>
+                </div>
+                <button id="auto-btn">購入</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <script src="assets/js/game.js" defer></script>

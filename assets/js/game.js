@@ -89,6 +89,11 @@ const autoLevelEl = document.getElementById("auto-level");
 const autoCostEl = document.getElementById("auto-cost");
 const autoBtn = document.getElementById("auto-btn");
 
+const spawnLevelModalEl = document.getElementById("spawn-level-modal");
+const spawnCostModalEl = document.getElementById("spawn-cost-modal");
+const autoLevelModalEl = document.getElementById("auto-level-modal");
+const autoCostModalEl = document.getElementById("auto-cost-modal");
+
 const feverLabelEl = document.getElementById("fever-label");
 const feverBarEl = document.getElementById("fever-bar");
 const feverBtn = document.getElementById("fever-btn");
@@ -97,8 +102,23 @@ const burstBarEl = document.getElementById("burst-bar");
 const burstBtn = document.getElementById("burst-btn");
 const burstStockEl = document.getElementById("burst-stock");
 
+const openStatusBtn = document.getElementById("open-status-modal");
+const openShopBtn = document.getElementById("open-shop-modal");
+const modalOverlay = document.getElementById("modal-overlay");
+const modalTitleEl = document.getElementById("modal-title");
+const modalCloseBtn = document.getElementById("modal-close");
+const statusModalContent = document.getElementById("status-modal-content");
+const shopModalContent = document.getElementById("shop-modal-content");
+const statusMainFullEl = document.getElementById("status-main-full");
+const statusSubFullEl = document.getElementById("status-sub-full");
+const metricTapsEl = document.getElementById("metric-taps");
+const metricAutoEl = document.getElementById("metric-auto");
+const metricDpsEl = document.getElementById("metric-dps");
+
 const BURST_NAME = "ルミナスバースト";
 const MAX_BURST_CHARGES = 9;
+
+let currentModal = null;
 
 // ========= 数値フォーマット =========
 function formatBigNumber(value) {
@@ -224,6 +244,7 @@ function triggerBurst() {
 
   statusMainEl.textContent =
     `${BURST_NAME}！光速の宝石シャワーで画面と財布を一気にブチ上げろ！`;
+  syncStatusModalIfOpen();
 
   const bursts = 12;
   const autoBoost = Math.max(autoBaseIncome(), state.autoMinerLevel * 40);
@@ -250,6 +271,7 @@ function endFever() {
   state.feverGauge = 0;
   if (state.feverTimeoutId) state.feverTimeoutId = null;
   statusMainEl.textContent = "フィーバー終了！ゲージが溜まり次第また自動突入するよ。";
+  syncStatusModalIfOpen();
   updateFeverUI();
   restartSpawnTimer();
 }
@@ -260,6 +282,7 @@ function startFever() {
   state.feverGauge = 100;
   statusMainEl.textContent =
     "FEVER!! 宝石価値＆出現速度が大幅アップ中！連打で一気にインフレ！";
+  syncStatusModalIfOpen();
   updateFeverUI();
   restartSpawnTimer();
 
@@ -354,6 +377,7 @@ function addMoney(baseGain, gemName, options = {}) {
   }
 
   statusMainEl.textContent = mainText;
+  syncStatusModalIfOpen();
 
   // 浮遊テキスト
   if (pos) {
@@ -378,6 +402,7 @@ function addXp(amount) {
     state.level += 1;
     state.xpMax = Math.floor(state.xpMax * 1.5);
     statusSubEl.textContent = `レベルアップ！ Lv.${state.level}。宝石価値とFEVER火力がさらにインフレ！`;
+    syncStatusModalIfOpen();
   }
 
   levelEl.textContent = state.level;
@@ -402,6 +427,10 @@ function updateStats() {
   const displayAuto = Math.floor(baseAuto * totalValueMultiplier());
   autoIncomeEl.textContent = formatBigNumber(displayAuto);
   dpsEl.textContent = formatBigNumber(state.currentDps);
+
+  metricTapsEl.textContent = state.totalTapCount.toLocaleString("ja-JP");
+  metricAutoEl.textContent = formatBigNumber(displayAuto);
+  metricDpsEl.textContent = formatBigNumber(state.currentDps);
 }
 
 function updateUnlockStatusText() {
@@ -433,6 +462,7 @@ function updateUnlockStatusText() {
       `<div>すべての宝石を解放しました！</div>` +
       `<div style="margin-top:4px;">${lines.join("<br>")}</div>`;
   }
+  syncStatusModalIfOpen();
 }
 
 // ========= 宝石出現関連 =========
@@ -630,6 +660,7 @@ function handleBombTap(bombEl, pos) {
 
   addXp(Math.floor(gainedMoney / 4));
   updateStats();
+  syncStatusModalIfOpen();
 }
 
 
@@ -674,8 +705,14 @@ function updateShopButtons() {
   spawnCostEl.textContent = formatBigNumber(spawnCost);
   autoCostEl.textContent = formatBigNumber(autoCost);
 
+  spawnCostModalEl.textContent = formatBigNumber(spawnCost);
+  autoCostModalEl.textContent = formatBigNumber(autoCost);
+
   spawnLevelEl.textContent = state.spawnUpgradeLevel;
   autoLevelEl.textContent = state.autoMinerLevel;
+
+  spawnLevelModalEl.textContent = state.spawnUpgradeLevel;
+  autoLevelModalEl.textContent = state.autoMinerLevel;
 
   spawnBtn.disabled = state.money < spawnCost;
   autoBtn.disabled = state.money < autoCost;
@@ -690,6 +727,7 @@ spawnBtn.addEventListener("click", () => {
   statusMainEl.textContent = `出現速度アップ Lv.${state.spawnUpgradeLevel} を購入！画面がどんどん宝石まみれに！`;
   updateShopButtons();
   restartSpawnTimer();
+  syncStatusModalIfOpen();
 });
 
 autoBtn.addEventListener("click", () => {
@@ -701,7 +739,60 @@ autoBtn.addEventListener("click", () => {
   statusMainEl.textContent = `オート採掘機 Lv.${state.autoMinerLevel} を購入！放置でもガンガン貯まる！`;
   updateStats();
   updateShopButtons();
+  syncStatusModalIfOpen();
 });
+
+function syncStatusModal() {
+  statusMainFullEl.textContent = statusMainEl.textContent;
+  statusSubFullEl.innerHTML = statusSubEl.innerHTML || "最新情報はまだありません。";
+  metricTapsEl.textContent = state.totalTapCount.toLocaleString("ja-JP");
+  metricAutoEl.textContent = formatBigNumber(
+    Math.floor(autoBaseIncome() * totalValueMultiplier())
+  );
+  metricDpsEl.textContent = formatBigNumber(state.currentDps);
+}
+
+function syncStatusModalIfOpen() {
+  if (currentModal === "status") {
+    syncStatusModal();
+  }
+}
+
+function openModal(type) {
+  currentModal = type;
+  modalOverlay.classList.remove("hidden");
+  modalOverlay.setAttribute("aria-hidden", "false");
+  statusModalContent.classList.add("hidden");
+  shopModalContent.classList.add("hidden");
+
+  if (type === "status") {
+    modalTitleEl.textContent = "ステータス詳細";
+    statusModalContent.classList.remove("hidden");
+    syncStatusModal();
+  } else {
+    modalTitleEl.textContent = "ショップ（アップグレード）";
+    shopModalContent.classList.remove("hidden");
+  }
+}
+
+function closeModal() {
+  currentModal = null;
+  modalOverlay.classList.add("hidden");
+  modalOverlay.setAttribute("aria-hidden", "true");
+}
+
+modalCloseBtn.addEventListener("click", closeModal);
+modalOverlay.addEventListener("click", (event) => {
+  if (
+    event.target === modalOverlay ||
+    (event.target instanceof HTMLElement &&
+      event.target.classList.contains("modal-backdrop"))
+  ) {
+    closeModal();
+  }
+});
+openStatusBtn.addEventListener("click", () => openModal("status"));
+openShopBtn.addEventListener("click", () => openModal("shop"));
 
 // ========= 初期化 =========
 function init() {
@@ -719,6 +810,7 @@ function init() {
 
   statusMainEl.textContent =
     "時間が経つと宝石が出現します。タップ連打とボム・FEVER・ルミナスバーストで画面をぶっ壊そう！";
+  syncStatusModal();
 
   restartSpawnTimer();
   setInterval(autoMinerTick, 1000);
