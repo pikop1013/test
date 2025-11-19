@@ -19,7 +19,6 @@ const state = {
   currentDps: 0,
   burstGauge: 0,
   burstCharges: 0,
-  autoLogEntries: [],
 };
 
 // ========= 宝石定義 =========
@@ -86,13 +85,16 @@ const statusSubEl = document.getElementById("status-sub");
 const spawnLevelEl = document.getElementById("spawn-level");
 const spawnCostEl = document.getElementById("spawn-cost");
 const spawnBtn = document.getElementById("spawn-btn");
+const spawnQuickBtn = document.getElementById("spawn-quick-btn");
 
 const autoLevelEl = document.getElementById("auto-level");
 const autoCostEl = document.getElementById("auto-cost");
 const autoBtn = document.getElementById("auto-btn");
+const autoQuickBtn = document.getElementById("auto-quick-btn");
 const valueLevelEl = document.getElementById("value-level");
 const valueCostEl = document.getElementById("value-cost");
 const valueBtn = document.getElementById("value-btn");
+const valueQuickBtn = document.getElementById("value-quick-btn");
 
 const spawnLevelModalEl = document.getElementById("spawn-level-modal");
 const spawnCostModalEl = document.getElementById("spawn-cost-modal");
@@ -108,8 +110,6 @@ const burstLabelEl = document.getElementById("burst-label");
 const burstBarEl = document.getElementById("burst-bar");
 const burstBtn = document.getElementById("burst-btn");
 const burstStockEl = document.getElementById("burst-stock");
-const autoLogListEl = document.getElementById("auto-log-list");
-const autoLogRateEl = document.getElementById("auto-log-rate");
 
 const openStatusBtn = document.getElementById("open-status-modal");
 const openShopBtn = document.getElementById("open-shop-modal");
@@ -126,7 +126,6 @@ const metricDpsEl = document.getElementById("metric-dps");
 
 const BURST_NAME = "ルミナスバースト";
 const MAX_BURST_CHARGES = 9;
-const MAX_AUTO_LOG_ENTRIES = 5;
 
 let currentModal = null;
 
@@ -446,9 +445,6 @@ function updateStats() {
   const displayAuto = Math.floor(baseAuto * totalValueMultiplier());
   autoIncomeEl.textContent = formatBigNumber(displayAuto);
   dpsEl.textContent = formatBigNumber(state.currentDps);
-  if (autoLogRateEl) {
-    autoLogRateEl.textContent = `+${formatBigNumber(displayAuto)} G/秒`;
-  }
 
   metricTapsEl.textContent = state.totalTapCount.toLocaleString("ja-JP");
   metricAutoEl.textContent = formatBigNumber(displayAuto);
@@ -485,43 +481,6 @@ function updateUnlockStatusText() {
       `<div style="margin-top:4px;">${lines.join("<br>")}</div>`;
   }
   syncStatusModalIfOpen();
-}
-
-function logAutoGain(gain) {
-  const now = new Date();
-  const timeLabel = now
-    .toLocaleTimeString("ja-JP", {
-      hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    })
-    .split(":")
-    .join(":");
-  state.autoLogEntries.unshift({
-    time: timeLabel,
-    gain: formatBigNumber(gain),
-    level: state.autoMinerLevel,
-  });
-  if (state.autoLogEntries.length > MAX_AUTO_LOG_ENTRIES) {
-    state.autoLogEntries.pop();
-  }
-  renderAutoLog();
-}
-
-function renderAutoLog() {
-  if (!autoLogListEl) return;
-  if (state.autoLogEntries.length === 0) {
-    autoLogListEl.innerHTML =
-      '<li class="empty">オート採掘の記録はまだありません。</li>';
-    return;
-  }
-  autoLogListEl.innerHTML = state.autoLogEntries
-    .map(
-      (entry) =>
-        `<li><span class="log-time">${entry.time}</span><span class="log-value">+${entry.gain}G</span></li>`
-    )
-    .join("");
 }
 
 // ========= 宝石出現関連 =========
@@ -738,7 +697,6 @@ function autoMinerTick() {
   addXp(Math.max(1, Math.floor(gain / 6)));
   updateUnlockStatusText();
   updateShopButtons();
-  logAutoGain(gain);
   updateStats();
   syncStatusModalIfOpen();
 }
@@ -785,12 +743,19 @@ function updateShopButtons() {
   autoLevelModalEl.textContent = state.autoMinerLevel;
   valueLevelModalEl.textContent = state.gemValueUpgradeLevel;
 
-  spawnBtn.disabled = state.money < spawnCost;
-  autoBtn.disabled = state.money < autoCost;
-  valueBtn.disabled = state.money < valueCost;
+  const spawnDisabled = state.money < spawnCost;
+  const autoDisabled = state.money < autoCost;
+  const valueDisabled = state.money < valueCost;
+
+  if (spawnBtn) spawnBtn.disabled = spawnDisabled;
+  if (spawnQuickBtn) spawnQuickBtn.disabled = spawnDisabled;
+  if (autoBtn) autoBtn.disabled = autoDisabled;
+  if (autoQuickBtn) autoQuickBtn.disabled = autoDisabled;
+  if (valueBtn) valueBtn.disabled = valueDisabled;
+  if (valueQuickBtn) valueQuickBtn.disabled = valueDisabled;
 }
 
-spawnBtn.addEventListener("click", () => {
+function handleSpawnPurchase() {
   const cost = spawnUpgradeCost(state.spawnUpgradeLevel);
   if (state.money < cost) return;
   state.money -= cost;
@@ -800,9 +765,9 @@ spawnBtn.addEventListener("click", () => {
   updateShopButtons();
   restartSpawnTimer();
   syncStatusModalIfOpen();
-});
+}
 
-autoBtn.addEventListener("click", () => {
+function handleAutoPurchase() {
   const cost = autoUpgradeCost(state.autoMinerLevel);
   if (state.money < cost) return;
   state.money -= cost;
@@ -812,21 +777,26 @@ autoBtn.addEventListener("click", () => {
   updateStats();
   updateShopButtons();
   syncStatusModalIfOpen();
-});
-
-if (valueBtn) {
-  valueBtn.addEventListener("click", () => {
-    const cost = gemValueUpgradeCost(state.gemValueUpgradeLevel);
-    if (state.money < cost) return;
-    state.money -= cost;
-    moneyEl.textContent = formatBigNumber(state.money);
-    state.gemValueUpgradeLevel += 1;
-    statusMainEl.textContent = `宝石価値投資 Lv.${state.gemValueUpgradeLevel} に成功！すべての宝石がさらに高騰！`;
-    updateShopButtons();
-    updateStats();
-    syncStatusModalIfOpen();
-  });
 }
+
+function handleValuePurchase() {
+  const cost = gemValueUpgradeCost(state.gemValueUpgradeLevel);
+  if (state.money < cost) return;
+  state.money -= cost;
+  moneyEl.textContent = formatBigNumber(state.money);
+  state.gemValueUpgradeLevel += 1;
+  statusMainEl.textContent = `宝石価値投資 Lv.${state.gemValueUpgradeLevel} に成功！すべての宝石がさらに高騰！`;
+  updateShopButtons();
+  updateStats();
+  syncStatusModalIfOpen();
+}
+
+if (spawnBtn) spawnBtn.addEventListener("click", handleSpawnPurchase);
+if (spawnQuickBtn) spawnQuickBtn.addEventListener("click", handleSpawnPurchase);
+if (autoBtn) autoBtn.addEventListener("click", handleAutoPurchase);
+if (autoQuickBtn) autoQuickBtn.addEventListener("click", handleAutoPurchase);
+if (valueBtn) valueBtn.addEventListener("click", handleValuePurchase);
+if (valueQuickBtn) valueQuickBtn.addEventListener("click", handleValuePurchase);
 
 function syncStatusModal() {
   statusMainFullEl.textContent = statusMainEl.textContent;
@@ -893,8 +863,6 @@ function init() {
   updateFeverUI();
   updateBurstUI();
   updateStats();
-  renderAutoLog();
-
   statusMainEl.textContent =
     "時間が経つと宝石が出現します。タップ連打とボム・FEVER・ルミナスバーストで画面をぶっ壊そう！";
   syncStatusModal();

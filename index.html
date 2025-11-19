@@ -80,39 +80,58 @@
         <section id="shop-summary">
           <div class="section-header">
             <div class="section-title">ショップ</div>
-            <button id="open-shop-modal" class="ghost-btn">開く</button>
+            <button id="open-shop-modal" class="ghost-btn">詳細</button>
           </div>
           <div class="shop-quick-grid">
-            <div class="shop-quick">
+            <button
+              id="spawn-quick-btn"
+              class="shop-quick"
+              type="button"
+              aria-label="出現速度アップを購入"
+            >
               <div class="shop-quick-label">出現速度アップ</div>
               <div class="shop-quick-body">
-                <span class="shop-quick-level">Lv.<span id="spawn-level">0</span></span>
-                <span class="shop-quick-cost">必要: <span id="spawn-cost">200</span>G</span>
+                <span class="shop-quick-level"
+                  >Lv.<span id="spawn-level">0</span></span
+                >
+                <span class="shop-quick-cost"
+                  >必要: <span id="spawn-cost">200</span>G</span
+                >
               </div>
-            </div>
-            <div class="shop-quick">
+            </button>
+            <button
+              id="auto-quick-btn"
+              class="shop-quick"
+              type="button"
+              aria-label="オート採掘機を購入"
+            >
               <div class="shop-quick-label">オート採掘機</div>
               <div class="shop-quick-body">
-                <span class="shop-quick-level">Lv.<span id="auto-level">0</span></span>
-                <span class="shop-quick-cost">必要: <span id="auto-cost">300</span>G</span>
+                <span class="shop-quick-level"
+                  >Lv.<span id="auto-level">0</span></span
+                >
+                <span class="shop-quick-cost"
+                  >必要: <span id="auto-cost">300</span>G</span
+                >
               </div>
-            </div>
-            <div class="shop-quick">
+            </button>
+            <button
+              id="value-quick-btn"
+              class="shop-quick"
+              type="button"
+              aria-label="宝石価値投資を購入"
+            >
               <div class="shop-quick-label">宝石価値投資</div>
               <div class="shop-quick-body">
-                <span class="shop-quick-level">Lv.<span id="value-level">0</span></span>
-                <span class="shop-quick-cost">必要: <span id="value-cost">500</span>G</span>
+                <span class="shop-quick-level"
+                  >Lv.<span id="value-level">0</span></span
+                >
+                <span class="shop-quick-cost"
+                  >必要: <span id="value-cost">500</span>G</span
+                >
               </div>
-            </div>
+            </button>
           </div>
-        </section>
-
-        <section id="auto-log">
-          <div class="section-header">
-            <div class="section-title">オート採掘ログ</div>
-            <div id="auto-log-rate" class="log-rate">0 G/秒</div>
-          </div>
-          <ul id="auto-log-list" class="log-list" aria-live="polite"></ul>
         </section>
       </div>
     </div>
