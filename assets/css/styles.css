@@ -260,25 +260,54 @@ header .left {
 #bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(18, 21, 36, 0.95);
-  flex: 0 0 250px;
-  display: flex;
-  flex-direction: column;
+  flex: 0 0 190px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px 14px;
   overflow: hidden;
 }
 
-#status-area {
-  padding: 10px 14px;
-  font-size: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  line-height: 1.4;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
-  flex: 0 0 96px;
-  overflow: hidden;
-  position: relative;
+.section-header {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0.8) 75%, rgba(0, 0, 0, 0));
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.section-title {
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  color: #e2e8ff;
+}
+
+.ghost-btn {
+  background: rgba(255, 255, 255, 0.05);
+  color: #dbe3ff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.ghost-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+#status-area,
+#shop-summary {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 12px;
+  min-width: 0;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
 }
 
 #status-main {
@@ -287,26 +316,51 @@ header .left {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  line-height: 1.4;
 }
 
-#status-sub {
+.status-sub {
   opacity: 0.9;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  margin-top: 4px;
+  line-height: 1.4;
 }
 
-#shop {
-  padding: 10px 14px 12px;
+.shop-quick-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.shop-quick {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shop-quick-label {
   font-size: 12px;
-  flex: 1 1 auto;
-  overflow-y: auto;
+  font-weight: 600;
+  color: #eaf1ff;
+}
+
+.shop-quick-body {
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  color: #cfd6f7;
 }
 
 #shop-title {
   font-size: 13px;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
   opacity: 0.95;
   letter-spacing: 0.2px;
   color: #d6dcff;
@@ -314,19 +368,19 @@ header .left {
 
 .shop-grid {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .shop-item {
   flex: 1;
-  background: linear-gradient(145deg, rgba(40, 44, 70, 0.8), rgba(19, 21, 40, 0.9));
+  background: linear-gradient(145deg, rgba(40, 44, 70, 0.9), rgba(19, 21, 40, 0.95));
   border-radius: 12px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.4);
 }
 
 .shop-item-title {
@@ -337,7 +391,8 @@ header .left {
 
 .shop-item-desc {
   font-size: 11px;
-  opacity: 0.8;
+  opacity: 0.85;
+  line-height: 1.5;
 }
 
 .shop-item-info {
@@ -350,7 +405,7 @@ header .left {
 
 .shop-item button {
   margin-top: 6px;
-  padding: 6px 8px;
+  padding: 7px 10px;
   font-size: 12px;
   border-radius: 999px;
   border: none;
@@ -460,5 +515,98 @@ header .left {
 
 .float-text-bomb {
   color: #ffa726;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 7, 15, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.modal-container {
+  position: relative;
+  width: min(520px, 92vw);
+  max-height: 90vh;
+  background: linear-gradient(180deg, #161a2d, #0f1222);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.55);
+  padding: 14px 16px 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  color: #e2e6ff;
+  cursor: pointer;
+}
+
+.modal-body {
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.modal-block {
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.modal-label {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-bottom: 6px;
+  letter-spacing: 0.3px;
+}
+
+.modal-log {
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.modal-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 6px;
+  font-size: 12px;
+}
+
+.modal-panel .shop-grid {
+  flex-direction: column;
 }
 
