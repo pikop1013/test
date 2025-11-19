@@ -17,6 +17,7 @@ const state = {
   lastMoneyForDps: 0,
   currentDps: 0,
   burstGauge: 0,
+  burstCharges: 0,
 };
 
 // ========= 宝石定義 =========
@@ -94,6 +95,10 @@ const feverBtn = document.getElementById("fever-btn");
 const burstLabelEl = document.getElementById("burst-label");
 const burstBarEl = document.getElementById("burst-bar");
 const burstBtn = document.getElementById("burst-btn");
+const burstStockEl = document.getElementById("burst-stock");
+
+const BURST_NAME = "ルミナスバースト";
+const MAX_BURST_CHARGES = 9;
 
 // ========= 数値フォーマット =========
 function formatBigNumber(value) {
@@ -162,25 +167,24 @@ function updateFeverUI() {
   feverBarEl.style.width = `${Math.min(100, gauge)}%`;
 
   feverBtn.disabled = true;
-  feverBtn.classList.remove("ready", "active");
-
-  if (state.isFever) {
-    feverBtn.disabled = false;
-    feverBtn.classList.add("active");
-    feverBtn.textContent = "FEVER中";
-  } else if (gauge >= 100) {
-    feverBtn.disabled = false;
-    feverBtn.classList.add("ready");
-    feverBtn.textContent = "FEVER!";
-  } else {
-    feverBtn.textContent = "発動";
-  }
+  const isReady = !state.isFever && gauge >= 100;
+  feverBtn.classList.toggle("active", state.isFever);
+  feverBtn.classList.toggle("ready", isReady);
+  feverBtn.textContent = state.isFever
+    ? "FEVER中"
+    : isReady
+    ? "AUTO発動"
+    : "AUTO";
 }
 
 function addFeverGauge(amount) {
   if (state.isFever) return;
   state.feverGauge = Math.min(100, state.feverGauge + amount);
-  updateFeverUI();
+  if (state.feverGauge >= 100) {
+    startFever();
+  } else {
+    updateFeverUI();
+  }
 }
 
 // ========= ハイパーゲージ（爽快インフレボーナス） =========
@@ -188,26 +192,42 @@ function updateBurstUI() {
   const gauge = Math.round(state.burstGauge);
   burstLabelEl.textContent = `${gauge}%`;
   burstBarEl.style.width = `${Math.min(100, gauge)}%`;
-  burstBtn.disabled = gauge < 100;
-  burstBtn.classList.toggle("ready", gauge >= 100);
-  burstBtn.textContent = gauge >= 100 ? "超インフレ弾 READY" : "超インフレ弾";
+  burstStockEl.textContent = `x${state.burstCharges}`;
+  const ready = state.burstCharges > 0;
+  burstBtn.disabled = !ready;
+  burstBtn.classList.toggle("ready", ready);
+  burstBtn.textContent = ready ? `${BURST_NAME} 発射` : BURST_NAME;
 }
 
 function addBurstGauge(amount) {
-  state.burstGauge = Math.min(120, state.burstGauge + amount);
+  const total = state.burstGauge + amount;
+  const gainedCharges = Math.floor(total / 100);
+  if (gainedCharges > 0) {
+    state.burstCharges = Math.min(
+      MAX_BURST_CHARGES,
+      state.burstCharges + gainedCharges
+    );
+  }
+
+  if (state.burstCharges >= MAX_BURST_CHARGES) {
+    state.burstGauge = 0;
+  } else {
+    state.burstGauge = Math.min(100, total % 100);
+  }
   updateBurstUI();
 }
 
 function triggerBurst() {
-  if (state.burstGauge < 100) return;
-  state.burstGauge = 0;
+  if (state.burstCharges <= 0) return;
+  state.burstCharges -= 1;
   updateBurstUI();
 
   statusMainEl.textContent =
-    "超インフレ弾！一瞬で宝石の雨が降り注ぎ、画面と財布を派手にブチ上げる！";
+    `${BURST_NAME}！光速の宝石シャワーで画面と財布を一気にブチ上げろ！`;
 
   const bursts = 12;
-  const baseValue = 150 + state.level * 35 + state.autoMinerLevel * 24;
+  const autoBoost = Math.max(autoBaseIncome(), state.autoMinerLevel * 40);
+  const baseValue = 160 + state.level * 40 + Math.floor(autoBoost * 0.6);
 
   for (let i = 0; i < bursts; i++) {
     const pos = {
@@ -229,7 +249,7 @@ function endFever() {
   state.isFever = false;
   state.feverGauge = 0;
   if (state.feverTimeoutId) state.feverTimeoutId = null;
-  statusMainEl.textContent = "フィーバー終了！またゲージをためて発動しよう。";
+  statusMainEl.textContent = "フィーバー終了！ゲージが溜まり次第また自動突入するよ。";
   updateFeverUI();
   restartSpawnTimer();
 }
@@ -237,6 +257,7 @@ function endFever() {
 function startFever() {
   if (state.isFever || state.feverGauge < 100) return;
   state.isFever = true;
+  state.feverGauge = 100;
   statusMainEl.textContent =
     "FEVER!! 宝石価値＆出現速度が大幅アップ中！連打で一気にインフレ！";
   updateFeverUI();
@@ -245,12 +266,6 @@ function startFever() {
   if (state.feverTimeoutId) clearTimeout(state.feverTimeoutId);
   state.feverTimeoutId = setTimeout(endFever, 10000); // 10秒
 }
-
-feverBtn.addEventListener("click", () => {
-  if (!state.isFever && state.feverGauge >= 100) {
-    startFever();
-  }
-});
 
 // ========= クリティカル関連 =========
 function getCritChance() {
@@ -376,9 +391,9 @@ function addXp(amount) {
 
 function autoBaseIncome() {
   if (state.autoMinerLevel <= 0) return 0;
-  const exponential = Math.pow(1.12, state.autoMinerLevel);
-  const levelScale = 1 + (state.level - 1) * 0.14;
-  return Math.floor(8 * exponential * levelScale);
+  const exponential = Math.pow(1.15, state.autoMinerLevel);
+  const levelScale = 1 + (state.level - 1) * 0.18;
+  return Math.floor(12 * exponential * levelScale);
 }
 
 function updateStats() {
@@ -502,7 +517,7 @@ function handleNormalGemTap(gemEl, gemType, pos) {
   gemEl.remove();
 
   addCombo();
-  addFeverGauge(5); // 1タップで5%（20ヒットでFEVER）
+  addFeverGauge(5); // 1タップで5%（ベース）。オート収入でも徐々に加算。
   addBurstGauge(6);
 
   state.totalTapCount += 1;
@@ -627,7 +642,10 @@ function autoMinerTick() {
   state.money += gain;
   state.totalEarned += gain;
   moneyEl.textContent = formatBigNumber(state.money);
-  addBurstGauge(2 + state.autoMinerLevel * 0.6);
+  addBurstGauge(3 + state.autoMinerLevel * 0.8);
+  const feverFromAuto = 0.4 + state.autoMinerLevel * 0.04;
+  addFeverGauge(feverFromAuto);
+  addXp(Math.max(1, Math.floor(gain / 6)));
   updateUnlockStatusText();
   updateShopButtons();
 }
@@ -646,7 +664,7 @@ function spawnUpgradeCost(level) {
 }
 
 function autoUpgradeCost(level) {
-  return 300 * Math.pow(1.1, level); // 300, 600, 1200, ...
+  return 280 * Math.pow(1.08, level); // 緩やかに伸ばし、オートを買いやすく
 }
 
 function updateShopButtons() {
@@ -700,7 +718,7 @@ function init() {
   updateStats();
 
   statusMainEl.textContent =
-    "時間が経つと宝石が出現します。タップ連打とボム・FEVER・超インフレ弾で画面をぶっ壊そう！";
+    "時間が経つと宝石が出現します。タップ連打とボム・FEVER・ルミナスバーストで画面をぶっ壊そう！";
 
   restartSpawnTimer();
   setInterval(autoMinerTick, 1000);
