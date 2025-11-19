@@ -10,6 +10,7 @@ const state = {
   comboTimeoutId: null,
   spawnUpgradeLevel: 0,
   autoMinerLevel: 0,
+  gemValueUpgradeLevel: 0,
   feverGauge: 0,
   isFever: false,
   feverTimeoutId: null,
@@ -18,6 +19,7 @@ const state = {
   currentDps: 0,
   burstGauge: 0,
   burstCharges: 0,
+  autoLogEntries: [],
 };
 
 // ========= 宝石定義 =========
@@ -88,11 +90,16 @@ const spawnBtn = document.getElementById("spawn-btn");
 const autoLevelEl = document.getElementById("auto-level");
 const autoCostEl = document.getElementById("auto-cost");
 const autoBtn = document.getElementById("auto-btn");
+const valueLevelEl = document.getElementById("value-level");
+const valueCostEl = document.getElementById("value-cost");
+const valueBtn = document.getElementById("value-btn");
 
 const spawnLevelModalEl = document.getElementById("spawn-level-modal");
 const spawnCostModalEl = document.getElementById("spawn-cost-modal");
 const autoLevelModalEl = document.getElementById("auto-level-modal");
 const autoCostModalEl = document.getElementById("auto-cost-modal");
+const valueLevelModalEl = document.getElementById("value-level-modal");
+const valueCostModalEl = document.getElementById("value-cost-modal");
 
 const feverLabelEl = document.getElementById("fever-label");
 const feverBarEl = document.getElementById("fever-bar");
@@ -101,6 +108,8 @@ const burstLabelEl = document.getElementById("burst-label");
 const burstBarEl = document.getElementById("burst-bar");
 const burstBtn = document.getElementById("burst-btn");
 const burstStockEl = document.getElementById("burst-stock");
+const autoLogListEl = document.getElementById("auto-log-list");
+const autoLogRateEl = document.getElementById("auto-log-rate");
 
 const openStatusBtn = document.getElementById("open-status-modal");
 const openShopBtn = document.getElementById("open-shop-modal");
@@ -117,6 +126,7 @@ const metricDpsEl = document.getElementById("metric-dps");
 
 const BURST_NAME = "ルミナスバースト";
 const MAX_BURST_CHARGES = 9;
+const MAX_AUTO_LOG_ENTRIES = 5;
 
 let currentModal = null;
 
@@ -178,7 +188,16 @@ function feverValueMultiplier() {
 }
 
 function totalValueMultiplier() {
-  return levelValueMultiplier() * feverValueMultiplier();
+  return (
+    levelValueMultiplier() *
+    feverValueMultiplier() *
+    investmentValueMultiplier()
+  );
+}
+
+function investmentValueMultiplier() {
+  // 宝石価値投資の恒久倍率。Lvごとに+25%
+  return 1 + state.gemValueUpgradeLevel * 0.25;
 }
 
 function updateFeverUI() {
@@ -427,6 +446,9 @@ function updateStats() {
   const displayAuto = Math.floor(baseAuto * totalValueMultiplier());
   autoIncomeEl.textContent = formatBigNumber(displayAuto);
   dpsEl.textContent = formatBigNumber(state.currentDps);
+  if (autoLogRateEl) {
+    autoLogRateEl.textContent = `+${formatBigNumber(displayAuto)} G/秒`;
+  }
 
   metricTapsEl.textContent = state.totalTapCount.toLocaleString("ja-JP");
   metricAutoEl.textContent = formatBigNumber(displayAuto);
@@ -463,6 +485,43 @@ function updateUnlockStatusText() {
       `<div style="margin-top:4px;">${lines.join("<br>")}</div>`;
   }
   syncStatusModalIfOpen();
+}
+
+function logAutoGain(gain) {
+  const now = new Date();
+  const timeLabel = now
+    .toLocaleTimeString("ja-JP", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    })
+    .split(":")
+    .join(":");
+  state.autoLogEntries.unshift({
+    time: timeLabel,
+    gain: formatBigNumber(gain),
+    level: state.autoMinerLevel,
+  });
+  if (state.autoLogEntries.length > MAX_AUTO_LOG_ENTRIES) {
+    state.autoLogEntries.pop();
+  }
+  renderAutoLog();
+}
+
+function renderAutoLog() {
+  if (!autoLogListEl) return;
+  if (state.autoLogEntries.length === 0) {
+    autoLogListEl.innerHTML =
+      '<li class="empty">オート採掘の記録はまだありません。</li>';
+    return;
+  }
+  autoLogListEl.innerHTML = state.autoLogEntries
+    .map(
+      (entry) =>
+        `<li><span class="log-time">${entry.time}</span><span class="log-value">+${entry.gain}G</span></li>`
+    )
+    .join("");
 }
 
 // ========= 宝石出現関連 =========
@@ -679,6 +738,9 @@ function autoMinerTick() {
   addXp(Math.max(1, Math.floor(gain / 6)));
   updateUnlockStatusText();
   updateShopButtons();
+  logAutoGain(gain);
+  updateStats();
+  syncStatusModalIfOpen();
 }
 
 // ========= DPS計測 =========
@@ -698,24 +760,34 @@ function autoUpgradeCost(level) {
   return 280 * Math.pow(1.08, level); // 緩やかに伸ばし、オートを買いやすく
 }
 
+function gemValueUpgradeCost(level) {
+  return 500 * Math.pow(1.6, level); // 宝石単価投資
+}
+
 function updateShopButtons() {
   const spawnCost = spawnUpgradeCost(state.spawnUpgradeLevel);
   const autoCost = autoUpgradeCost(state.autoMinerLevel);
+  const valueCost = gemValueUpgradeCost(state.gemValueUpgradeLevel);
 
   spawnCostEl.textContent = formatBigNumber(spawnCost);
   autoCostEl.textContent = formatBigNumber(autoCost);
+  valueCostEl.textContent = formatBigNumber(valueCost);
 
   spawnCostModalEl.textContent = formatBigNumber(spawnCost);
   autoCostModalEl.textContent = formatBigNumber(autoCost);
+  valueCostModalEl.textContent = formatBigNumber(valueCost);
 
   spawnLevelEl.textContent = state.spawnUpgradeLevel;
   autoLevelEl.textContent = state.autoMinerLevel;
+  valueLevelEl.textContent = state.gemValueUpgradeLevel;
 
   spawnLevelModalEl.textContent = state.spawnUpgradeLevel;
   autoLevelModalEl.textContent = state.autoMinerLevel;
+  valueLevelModalEl.textContent = state.gemValueUpgradeLevel;
 
   spawnBtn.disabled = state.money < spawnCost;
   autoBtn.disabled = state.money < autoCost;
+  valueBtn.disabled = state.money < valueCost;
 }
 
 spawnBtn.addEventListener("click", () => {
@@ -741,6 +813,20 @@ autoBtn.addEventListener("click", () => {
   updateShopButtons();
   syncStatusModalIfOpen();
 });
+
+if (valueBtn) {
+  valueBtn.addEventListener("click", () => {
+    const cost = gemValueUpgradeCost(state.gemValueUpgradeLevel);
+    if (state.money < cost) return;
+    state.money -= cost;
+    moneyEl.textContent = formatBigNumber(state.money);
+    state.gemValueUpgradeLevel += 1;
+    statusMainEl.textContent = `宝石価値投資 Lv.${state.gemValueUpgradeLevel} に成功！すべての宝石がさらに高騰！`;
+    updateShopButtons();
+    updateStats();
+    syncStatusModalIfOpen();
+  });
+}
 
 function syncStatusModal() {
   statusMainFullEl.textContent = statusMainEl.textContent;
@@ -807,6 +893,7 @@ function init() {
   updateFeverUI();
   updateBurstUI();
   updateStats();
+  renderAutoLog();
 
   statusMainEl.textContent =
     "時間が経つと宝石が出現します。タップ連打とボム・FEVER・ルミナスバーストで画面をぶっ壊そう！";
