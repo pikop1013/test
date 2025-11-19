@@ -10,62 +10,60 @@
     <link rel="stylesheet" href="assets/css/styles.css" />
   </head>
   <body>
-    <div id="game">
-      <header>
-        <div class="left">
-          <div class="money-row">
-            <span class="money-label">所持金</span>
-            <span class="money-value"><span id="money">0</span> G</span>
-          </div>
-          <div class="level-row">
-            Lv.<span id="level">1</span>
-            （XP: <span id="xp">0</span>/<span id="xp-max">100</span>）
-          </div>
-          <div class="xp-bar-container">
-            <div id="xp-bar" class="xp-bar"></div>
-          </div>
-          <div class="stat-line">
-            TAP: <span id="tap-count">0</span> 回 ／ Auto:
-            <span id="auto-income">0</span> G/秒 ／ DPS:
-            <span id="dps">0</span> G/秒
-          </div>
-        </div>
-
-        <div class="right-panel">
-          <div class="combo-indicator">
-            <span class="combo-label">コンボ:</span>
-            <span id="combo" class="combo-none">x1.0</span>
-          </div>
-          <div class="fever-indicator">
-            <div class="fever-top">
-              <span>FEVER:</span>
-              <span id="fever-label" class="fever-label">0%</span>
+      <div id="game">
+        <header>
+          <div class="left">
+            <div class="money-row">
+              <span class="money-label">所持金</span>
+              <span class="money-value"><span id="money">0</span> G</span>
             </div>
-            <div class="fever-bar-container">
-              <div id="fever-bar" class="fever-bar"></div>
+            <div class="level-row">
+              Lv.<span id="level">1</span>
+              （XP: <span id="xp">0</span>/<span id="xp-max">100</span>）
             </div>
-            <button id="fever-btn" disabled aria-label="自動発動">AUTO</button>
+            <div class="xp-bar-container">
+              <div id="xp-bar" class="xp-bar"></div>
+            </div>
+            <div class="stat-line">
+              TAP: <span id="tap-count">0</span> 回 ／ Auto:
+              <span id="auto-income">0</span> G/秒 ／ DPS:
+              <span id="dps">0</span> G/秒
+            </div>
           </div>
 
-          <div class="burst-indicator">
-            <div class="burst-top">
-              <span>HYPER:</span>
-              <span id="burst-label" class="burst-label">0%</span>
+          <div class="right-panel">
+            <div class="combo-indicator">
+              <span class="combo-label">コンボ:</span>
+              <span id="combo" class="combo-none">x1.0</span>
             </div>
-            <div class="burst-bar-container">
-              <div id="burst-bar" class="burst-bar"></div>
+            <div class="fever-indicator">
+              <div class="fever-top">
+                <span>FEVER:</span>
+                <span id="fever-label" class="fever-label">0%</span>
+              </div>
+              <div class="fever-bar-container">
+                <div id="fever-bar" class="fever-bar"></div>
+              </div>
+              <button id="fever-btn" disabled aria-label="自動発動">AUTO</button>
             </div>
-            <div class="burst-actions">
-              <span id="burst-stock" class="burst-stock">x0</span>
-              <button id="burst-btn" disabled>ルミナスバースト</button>
+
+            <div class="burst-indicator">
+              <div class="burst-top">
+                <span>HYPER:</span>
+                <span id="burst-label" class="burst-label">0%</span>
+              </div>
+              <div class="burst-bar-container">
+                <div id="burst-bar" class="burst-bar"></div>
+              </div>
+              <div class="burst-actions">
+                <span id="burst-stock" class="burst-stock">x0</span>
+                <button id="burst-btn" disabled>ルミナスバースト</button>
+              </div>
             </div>
           </div>
-          <button id="burst-btn" disabled>超インフレ弾</button>
-        </div>
-      </div>
-    </header>
+        </header>
 
-      <main id="field"></main>
+        <main id="field"></main>
 
       <div id="bottom">
         <div id="status-area">
