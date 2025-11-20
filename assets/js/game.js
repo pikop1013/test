@@ -266,7 +266,7 @@ function triggerBurst() {
   updateBurstUI();
 
   statusMainEl.textContent =
-    `${BURST_NAME}！光速の宝石シャワーで画面と財布を一気にブチ上げろ！`;
+    `${BURST_NAME}発射！宝石シャワーで一気に稼ぐチャンス。`;
   syncStatusModalIfOpen();
 
   const bursts = 12;
@@ -293,7 +293,7 @@ function endFever() {
   state.isFever = false;
   state.feverGauge = 0;
   if (state.feverTimeoutId) state.feverTimeoutId = null;
-  statusMainEl.textContent = "フィーバー終了！ゲージが溜まり次第また自動突入するよ。";
+  statusMainEl.textContent = "フィーバー終了。ゲージが溜まったら自動で再発動。";
   syncStatusModalIfOpen();
   updateFeverUI();
   updateUnlockStatusText();
@@ -304,8 +304,7 @@ function startFever() {
   if (state.isFever || state.feverGauge < 100) return;
   state.isFever = true;
   state.feverGauge = 100;
-  statusMainEl.textContent =
-    "FEVER!! 宝石価値＆出現速度が大幅アップ中！連打で一気にインフレ！";
+  statusMainEl.textContent = "FEVER中：価値と出現速度が増加中。今が稼ぎどき！";
   syncStatusModalIfOpen();
   updateFeverUI();
   updateUnlockStatusText();
@@ -387,18 +386,20 @@ function addMoney(baseGain, gemName, options = {}) {
   state.totalEarned += gain;
   moneyEl.textContent = formatBigNumber(state.money);
 
-  let mainText = `${gemName} をタップ！ +${formatBigNumber(gain)}G`;
+  let mainText = `${gemName} +${formatBigNumber(gain)}G`;
   if (isBomb) {
-    mainText = `ボム炸裂！周囲の宝石をまとめて破壊！ +${formatBigNumber(
-      gain
-    )}G`;
+    mainText = `ボム炸裂！ +${formatBigNumber(gain)}G`;
   } else {
     const parts = [];
-    parts.push(`コンボ x${state.comboMultiplier.toFixed(1)}`);
-    parts.push(`レベル補正 x${levelValueMultiplier().toFixed(1)}`);
-    if (state.isFever) parts.push(`FEVER x${feverValueMultiplier().toFixed(1)}`);
-    if (isCrit) parts.push(`CRIT x${critMultiplier.toFixed(1)}`);
-    mainText += `（${parts.join("／")}）`;
+    if (state.comboMultiplier > 1) {
+      parts.push(`コンボx${state.comboMultiplier.toFixed(1)}`);
+    }
+    parts.push(`Lv補正x${levelValueMultiplier().toFixed(1)}`);
+    if (state.isFever) parts.push(`FEVERx${feverValueMultiplier().toFixed(1)}`);
+    if (isCrit) parts.push(`CRITx${critMultiplier.toFixed(1)}`);
+    if (parts.length > 0) {
+      mainText += ` （${parts.join(" · ")}）`;
+    }
   }
 
   statusMainEl.textContent = mainText;
@@ -467,20 +468,20 @@ function updateUnlockStatusText() {
       g.unlockMoney === 0
         ? "最初から出現"
         : `${formatBigNumber(g.unlockMoney)}G 以上で解放`;
+    const statusLabel = unlocked ? "解放済" : "未解放";
     const badge = `<span class="badge ${
       unlocked ? "badge-unlocked" : "badge-locked"
-    }">${unlocked ? "解放済" : "未解放"}</span>`;
+    }">${statusLabel}</span>`;
     const evaluatedValue = currentGemValue(g.value);
 
     return `
       <div class="status-gem-line">
-        <span class="status-gem-pill">${g.icon} - ${formatBigNumber(
+        <span class="status-gem-pill">[${g.icon}] - [${formatBigNumber(
       evaluatedValue
-    )}G</span>
-        <span class="status-gem-meta">${g.name}（基礎 +${formatBigNumber(
-      g.value
-    )}G）</span>
-        <span class="status-gem-meta">${condition}</span>
+    )}G]</span>
+        <span class="status-gem-meta">[${g.name}]</span>
+        <span class="status-gem-meta">[${statusLabel}]</span>
+        <span class="status-gem-condition">解放条件: ${condition}</span>
         ${badge}
       </div>
     `;
@@ -780,7 +781,7 @@ function handleSpawnPurchase() {
   state.money -= cost;
   moneyEl.textContent = formatBigNumber(state.money);
   state.spawnUpgradeLevel += 1;
-  statusMainEl.textContent = `出現速度アップ Lv.${state.spawnUpgradeLevel} を購入！画面がどんどん宝石まみれに！`;
+  statusMainEl.textContent = `出現速度アップ Lv.${state.spawnUpgradeLevel} を購入。出現ペース上昇。`;
   updateShopButtons();
   restartSpawnTimer();
   syncStatusModalIfOpen();
@@ -792,7 +793,7 @@ function handleAutoPurchase() {
   state.money -= cost;
   moneyEl.textContent = formatBigNumber(state.money);
   state.autoMinerLevel += 1;
-  statusMainEl.textContent = `オート採掘機 Lv.${state.autoMinerLevel} を購入！放置でもガンガン貯まる！`;
+  statusMainEl.textContent = `オート採掘機 Lv.${state.autoMinerLevel} を購入。放置収入アップ。`;
   updateStats();
   updateShopButtons();
   syncStatusModalIfOpen();
@@ -804,7 +805,7 @@ function handleValuePurchase() {
   state.money -= cost;
   moneyEl.textContent = formatBigNumber(state.money);
   state.gemValueUpgradeLevel += 1;
-  statusMainEl.textContent = `宝石価値投資 Lv.${state.gemValueUpgradeLevel} に成功！すべての宝石がさらに高騰！`;
+  statusMainEl.textContent = `宝石価値投資 Lv.${state.gemValueUpgradeLevel}。宝石単価を恒久強化。`;
   updateShopButtons();
   updateUnlockStatusText();
   updateStats();
@@ -883,8 +884,7 @@ function init() {
   updateFeverUI();
   updateBurstUI();
   updateStats();
-  statusMainEl.textContent =
-    "時間が経つと宝石が出現します。タップ連打とボム・FEVER・ルミナスバーストで画面をぶっ壊そう！";
+  statusMainEl.textContent = "宝石が時間で出現。タップとFEVERで稼ごう。";
   syncStatusModal();
 
   restartSpawnTimer();
