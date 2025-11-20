@@ -123,6 +123,7 @@ const statusSubFullEl = document.getElementById("status-sub-full");
 const metricTapsEl = document.getElementById("metric-taps");
 const metricAutoEl = document.getElementById("metric-auto");
 const metricDpsEl = document.getElementById("metric-dps");
+let latestStatusDetailHtml = "";
 
 const BURST_NAME = "ルミナスバースト";
 const MAX_BURST_CHARGES = 9;
@@ -462,25 +463,41 @@ function updateStats() {
 
 function updateUnlockStatusText() {
   const locked = GEM_TYPES.filter((g) => state.money < g.unlockMoney);
-  const lines = GEM_TYPES.map((g) => {
+  const mainLines = GEM_TYPES.map((g) => {
+    const unlocked = state.money >= g.unlockMoney;
+    const badge = `<span class="badge ${
+      unlocked ? "badge-unlocked" : "badge-locked"
+    }">${unlocked ? "解放済" : "未解放"}</span>`;
+    const evaluatedValue = currentGemValue(g.value);
+
+    return `
+      <div class="status-gem-line">
+        <span class="status-gem-pill">${g.icon} - ${formatBigNumber(
+          evaluatedValue
+        )}G</span>
+        <span class="status-gem-meta">${g.name}</span>
+        ${badge}
+      </div>
+    `;
+  });
+
+  const detailLines = GEM_TYPES.map((g) => {
     const unlocked = state.money >= g.unlockMoney;
     const condition =
       g.unlockMoney === 0
         ? "最初から出現"
         : `${formatBigNumber(g.unlockMoney)}G 以上で解放`;
-    const statusLabel = unlocked ? "解放済" : "未解放";
     const badge = `<span class="badge ${
       unlocked ? "badge-unlocked" : "badge-locked"
-    }">${statusLabel}</span>`;
+    }">${unlocked ? "解放済" : "未解放"}</span>`;
     const evaluatedValue = currentGemValue(g.value);
 
     return `
       <div class="status-gem-line">
-        <span class="status-gem-pill">[${g.icon}] - [${formatBigNumber(
-      evaluatedValue
-    )}G]</span>
-        <span class="status-gem-meta">[${g.name}]</span>
-        <span class="status-gem-meta">[${statusLabel}]</span>
+        <span class="status-gem-pill">${g.icon} - ${formatBigNumber(
+          evaluatedValue
+        )}G</span>
+        <span class="status-gem-meta">${g.name}</span>
         <span class="status-gem-condition">解放条件: ${condition}</span>
         ${badge}
       </div>
@@ -491,15 +508,26 @@ function updateUnlockStatusText() {
     locked.sort((a, b) => a.unlockMoney - b.unlockMoney);
     const next = locked[0];
     statusSubEl.innerHTML =
+      `<div class="status-next">次のレア宝石: <strong>${next.icon} ${next.name}</strong></div>` +
+      `<div class="status-gem-list">${mainLines.join("")}</div>`;
+
+    latestStatusDetailHtml =
       `<div>次のレア宝石: <strong>${next.icon} ${next.name}</strong>（${formatBigNumber(
         next.unlockMoney
-      )}G で解放）</div>` +
-      `<div style="margin-top:4px;">${lines.join("")}</div>`;
+      )}G 以上で解放）</div>` +
+      `<div style="margin-top:4px;">${detailLines.join("")}</div>`;
   } else {
     statusSubEl.innerHTML =
+      `<div class="status-next">すべての宝石を解放しました！</div>` +
+      `<div class="status-gem-list">${mainLines.join("")}</div>`;
+
+    latestStatusDetailHtml =
       `<div>すべての宝石を解放しました！</div>` +
-      `<div style="margin-top:4px;">${lines.join("")}</div>`;
+      `<div style="margin-top:4px;">${detailLines.join("")}</div>`;
   }
+
+  statusSubFullEl.innerHTML =
+    latestStatusDetailHtml || "最新情報はまだありません。";
   syncStatusModalIfOpen();
 }
 
@@ -821,7 +849,8 @@ if (valueQuickBtn) valueQuickBtn.addEventListener("click", handleValuePurchase);
 
 function syncStatusModal() {
   statusMainFullEl.textContent = statusMainEl.textContent;
-  statusSubFullEl.innerHTML = statusSubEl.innerHTML || "最新情報はまだありません。";
+  statusSubFullEl.innerHTML =
+    latestStatusDetailHtml || "最新情報はまだありません。";
   metricTapsEl.textContent = state.totalTapCount.toLocaleString("ja-JP");
   metricAutoEl.textContent = formatBigNumber(
     Math.floor(autoBaseIncome() * totalValueMultiplier())

@@ -14,15 +14,16 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: 100dvh;
   padding: 12px;
 }
 
 #game {
   width: 100%;
   max-width: 520px;
-  height: 100vh;
-  max-height: 920px;
+  height: auto;
+  min-height: 640px;
+  max-height: min(calc(100dvh - 24px), 920px);
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, rgba(30, 33, 55, 0.9), #0d0f1c);
@@ -31,6 +32,17 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.05);
   overflow: hidden;
+  overflow-y: auto;
+}
+
+@supports not (height: 100dvh) {
+  body {
+    min-height: 100vh;
+  }
+
+  #game {
+    max-height: min(calc(100vh - 24px), 920px);
+  }
 }
 
 header {
@@ -337,6 +349,17 @@ header .left {
   line-height: 1.45;
   overflow-wrap: anywhere;
   font-size: clamp(10.5px, 1.5vw, 11.5px);
+}
+
+.status-next {
+  padding: 4px 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  font-weight: 600;
+}
+
+.status-gem-list {
+  margin-top: 4px;
 }
 
 .status-gem-line {
