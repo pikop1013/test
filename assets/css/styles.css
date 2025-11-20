@@ -318,21 +318,38 @@ header .left {
 
 #status-main {
   font-weight: 600;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-height: 1.4;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  font-size: clamp(12px, 1.7vw, 13px);
 }
 
 .status-sub {
   opacity: 0.9;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   margin-top: 4px;
-  line-height: 1.4;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  font-size: clamp(11px, 1.6vw, 12px);
+}
+
+.status-gem-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.status-gem-pill {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.status-gem-meta {
+  opacity: 0.85;
 }
 
 .shop-quick-grid {
