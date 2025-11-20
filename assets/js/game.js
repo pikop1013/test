@@ -199,6 +199,11 @@ function investmentValueMultiplier() {
   return 1 + state.gemValueUpgradeLevel * 0.25;
 }
 
+function currentGemValue(baseValue) {
+  // 現時点の各種補正を反映した価値を算出
+  return Math.max(1, Math.floor(baseValue * totalValueMultiplier()));
+}
+
 function updateFeverUI() {
   const gauge = Math.round(state.feverGauge);
   feverLabelEl.textContent = `${gauge}%`;
@@ -291,6 +296,7 @@ function endFever() {
   statusMainEl.textContent = "フィーバー終了！ゲージが溜まり次第また自動突入するよ。";
   syncStatusModalIfOpen();
   updateFeverUI();
+  updateUnlockStatusText();
   restartSpawnTimer();
 }
 
@@ -302,6 +308,7 @@ function startFever() {
     "FEVER!! 宝石価値＆出現速度が大幅アップ中！連打で一気にインフレ！";
   syncStatusModalIfOpen();
   updateFeverUI();
+  updateUnlockStatusText();
   restartSpawnTimer();
 
   if (state.feverTimeoutId) clearTimeout(state.feverTimeoutId);
@@ -429,6 +436,7 @@ function addXp(amount) {
   const ratio = (state.xp / state.xpMax) * 100;
   xpBarEl.style.width = `${Math.min(100, ratio)}%`;
 
+  updateUnlockStatusText();
   restartSpawnTimer();
 }
 
@@ -458,27 +466,38 @@ function updateUnlockStatusText() {
     const condition =
       g.unlockMoney === 0
         ? "最初から出現"
-        : `${formatBigNumber(g.unlockMoney)}G 以上で出現`;
+        : `${formatBigNumber(g.unlockMoney)}G 以上で解放`;
     const badge = `<span class="badge ${
       unlocked ? "badge-unlocked" : "badge-locked"
     }">${unlocked ? "解放済" : "未解放"}</span>`;
-    return `${g.name}（基礎 +${g.value.toLocaleString(
-      "ja-JP"
-    )}G）: ${condition} ${badge}`;
+    const evaluatedValue = currentGemValue(g.value);
+
+    return `
+      <div class="status-gem-line">
+        <span class="status-gem-pill">${g.icon} - ${formatBigNumber(
+      evaluatedValue
+    )}G</span>
+        <span class="status-gem-meta">${g.name}（基礎 +${formatBigNumber(
+      g.value
+    )}G）</span>
+        <span class="status-gem-meta">${condition}</span>
+        ${badge}
+      </div>
+    `;
   });
 
   if (locked.length > 0) {
     locked.sort((a, b) => a.unlockMoney - b.unlockMoney);
     const next = locked[0];
     statusSubEl.innerHTML =
-      `<div>次のレア宝石: <strong>${next.name}</strong>（${formatBigNumber(
+      `<div>次のレア宝石: <strong>${next.icon} ${next.name}</strong>（${formatBigNumber(
         next.unlockMoney
       )}G で解放）</div>` +
-      `<div style="margin-top:4px;">${lines.join("<br>")}</div>`;
+      `<div style="margin-top:4px;">${lines.join("")}</div>`;
   } else {
     statusSubEl.innerHTML =
       `<div>すべての宝石を解放しました！</div>` +
-      `<div style="margin-top:4px;">${lines.join("<br>")}</div>`;
+      `<div style="margin-top:4px;">${lines.join("")}</div>`;
   }
   syncStatusModalIfOpen();
 }
@@ -787,6 +806,7 @@ function handleValuePurchase() {
   state.gemValueUpgradeLevel += 1;
   statusMainEl.textContent = `宝石価値投資 Lv.${state.gemValueUpgradeLevel} に成功！すべての宝石がさらに高騰！`;
   updateShopButtons();
+  updateUnlockStatusText();
   updateStats();
   syncStatusModalIfOpen();
 }
